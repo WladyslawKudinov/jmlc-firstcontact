@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>FirstContact — краткое описание проекта</title>
+<style>
+  :root{
+    --ink:#0f172a; --body:#1e293b; --muted:#64748b; --line:#e2e8f0;
+    --accent:#4f46e5; --accent2:#0ea5e9;
+    --good:#059669; --goodbg:#ecfdf5; --bad:#dc2626; --badbg:#fef2f2;
+    --soft:#eef2ff; --amber:#b45309; --amberbg:#fffbeb;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#f1f5f9;color:var(--body);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    font-size:13.2px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .page{width:820px;margin:22px auto;background:#fff;padding:46px 54px 40px;
+    box-shadow:0 2px 18px rgba(15,23,42,.08);border-radius:6px;position:relative}
+  .page::before{content:"";position:absolute;left:0;top:0;bottom:0;width:7px;
+    background:linear-gradient(180deg,var(--accent),var(--accent2));border-radius:6px 0 0 6px}
+
+  h1{font-size:25px;line-height:1.12;margin:0 0 4px;color:var(--ink);letter-spacing:-.01em}
+  .sub{font-size:14px;color:var(--muted);margin:0 0 14px;font-weight:600}
+  .meta{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:11.5px;color:var(--muted);
+    border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:8px 0;margin:0 0 18px}
+  .meta b{color:var(--body)}
+
+  h2{font-size:15px;color:var(--accent);margin:22px 0 8px;letter-spacing:.01em;
+    display:flex;align-items:center;gap:8px}
+  h2 .n{display:inline-flex;align-items:center;justify-content:center;width:21px;height:21px;
+    background:var(--accent);color:#fff;border-radius:5px;font-size:12px;font-weight:700;flex:none}
+  h2:first-of-type{margin-top:6px}
+  p{margin:0 0 9px}
+  .lead{font-size:13.6px}
+  b,strong{color:var(--ink)}
+  .mut{color:var(--muted)}
+
+  .cards{display:flex;gap:11px;margin:12px 0 4px}
+  .card{flex:1;background:var(--soft);border:1px solid #c7d2fe;border-radius:8px;padding:12px 13px}
+  .card .big{font-size:24px;font-weight:800;color:var(--accent);line-height:1;letter-spacing:-.02em}
+  .card .cap{font-size:11px;color:var(--body);margin-top:5px;line-height:1.35}
+
+  ul{margin:5px 0 9px;padding-left:18px}
+  li{margin:3px 0}
+
+  .flow{display:flex;align-items:stretch;gap:6px;margin:10px 0;flex-wrap:wrap}
+  .step{flex:1;min-width:120px;background:#f8fafc;border:1px solid var(--line);border-radius:7px;
+    padding:8px 9px;font-size:11.4px;line-height:1.32}
+  .step .t{font-weight:700;color:var(--ink);display:block;margin-bottom:2px;font-size:11.8px}
+  .arrow{align-self:center;color:var(--accent2);font-weight:700}
+
+  table{border-collapse:collapse;width:100%;margin:9px 0 6px;font-size:12px}
+  th,td{border:1px solid var(--line);padding:6px 9px;text-align:center}
+  th{background:#f8fafc;color:var(--ink);font-weight:700;font-size:11.4px}
+  td.l,th.l{text-align:left}
+  .g{color:var(--good);font-weight:700;background:var(--goodbg)}
+  .r{color:var(--bad);font-weight:700;background:var(--badbg)}
+  .dash{color:#cbd5e1}
+
+  .split{display:flex;gap:13px;margin:10px 0}
+  .box{flex:1;border:1px solid var(--line);border-radius:8px;padding:11px 13px}
+  .box.kak{background:var(--badbg);border-color:#fecaca}
+  .box.chto{background:var(--goodbg);border-color:#a7f3d0}
+  .box .h{font-weight:800;font-size:12.5px;margin-bottom:4px}
+  .box.kak .h{color:var(--bad)} .box.chto .h{color:var(--good)}
+
+  .note{background:var(--amberbg);border:1px solid #fde68a;border-left:4px solid #f59e0b;
+    border-radius:6px;padding:10px 13px;margin:11px 0;font-size:12.2px}
+  .note b{color:var(--amber)}
+
+  .crit{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:9px 0}
+  .crit .c{border:1px solid var(--line);border-radius:7px;padding:9px 11px;font-size:11.6px;line-height:1.4}
+  .crit .c .h{font-weight:800;color:var(--accent);font-size:12px;margin-bottom:2px}
+
+  .foot{margin-top:18px;border-top:1px solid var(--line);padding-top:9px;
+    font-size:10.8px;color:var(--muted);line-height:1.5}
+  .pgnum{position:absolute;right:18px;bottom:12px;font-size:10px;color:#cbd5e1}
+
+  @page{size:A4;margin:12mm}
+  @media print{
+    body{background:#fff}
+    .page{box-shadow:none;margin:0 auto;border-radius:0;width:auto;page-break-after:always}
+    .page:last-child{page-break-after:auto}
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== СТРАНИЦА 1 ===================== -->
+<section class="page">
+  <h1>FirstContact — AI-SDR для онлайн-образования</h1>
+  <div class="sub">Краткое описание исследовательского проекта</div>
+  <div class="meta">
+    <span><b>Автор:</b> Владислав Кудинов</span>
+    <span><b>Конкурс:</b> JMLC (ITMO) · AI-First стартап</span>
+    <span><b>Продукт:</b> github.com/WladyslawKudinov/FCPrototype</span>
+    <span><b>Год:</b> 2026</span>
+  </div>
+
+  <h2><span class="n">1</span> Что это</h2>
+  <p class="lead"><b>FirstContact</b> — AI-First стартап: голосовой агент и CRM, которые берут на себя
+  первый контакт с заявками онлайн-школ. Агент <b>звонит и разговаривает голосом в реальном времени</b>,
+  выясняет класс, цель и сроки, оценивает заявку и передаёт менеджеру. Продукт развёрнут, есть
+  платящие клиенты; мы выходим на рынок США.</p>
+  <p class="mut" style="font-size:11.6px">Это работающий MVP, а не прототип: живой голосовой диалог
+  в реальном времени (Grok Voice, OpenAI Realtime, ElevenLabs, телефония Voximplant), бэкенд на
+  Python/FastAPI с базой Postgres, развёрнутый <b>в Docker на сервере</b>, и CRM с карточками заявок.</p>
+  <p>Ниже — про <b>один эксперимент внутри этого стартапа</b>: можно ли обучить модель, которая
+  лучше простых правил решает, <b>кому из заявок перезванивать первым</b> — и как убедиться, что
+  её результат настоящий, а не артефакт способа, которым мы получили данные. Это пример того, как
+  мы принимаем решения по ML.</p>
+
+  <h2><span class="n">2</span> Зачем эта задача нужна бизнесу</h2>
+  <p>У менеджера ограниченное время на обзвон. Если звонить в правильном порядке — сначала тем,
+  кто с большей вероятностью купит, — за тот же час получится больше продаж. Поэтому хороший
+  «оцениватель заявок» прямо превращается в выручку. Вопрос — чем его строить: жёсткими
+  правилами, обученной моделью или большой языковой моделью.</p>
+
+  <div class="cards">
+    <div class="card">
+      <div class="big">0.80</div>
+      <div class="cap">AUC лучшего подхода (оценка заявки через LLM) на <b>реальных</b> звонках</div>
+    </div>
+    <div class="card">
+      <div class="big">1.7×</div>
+      <div class="cap">больше будущих покупателей в первых 20% обзвона, чем при случайном порядке</div>
+    </div>
+    <div class="card">
+      <div class="big">до внедрения</div>
+      <div class="cap">методология поймала разрыв «симуляция → реальность» <b>раньше</b>, чем модель попала в прод</div>
+    </div>
+  </div>
+
+  <h2><span class="n">3</span> Как мы получали данные (и почему им можно верить)</h2>
+  <p>Настоящих звонков с разметкой у раннего продукта мало, поэтому основную обучающую выборку
+  мы <b>генерировали</b>, но так, чтобы в ней нельзя было «подсмотреть» правильный ответ:</p>
+  <div class="flow">
+    <div class="step"><span class="t">1. Кубик</span>Случайно задаём скрытые свойства заявки — насколько человек тёплый, платёжеспособный, целевой</div>
+    <span class="arrow">→</span>
+    <div class="step"><span class="t">2. Ответ заранее</span>По этим свойствам <b>в коде</b> вычисляем правильный ответ (купит / не купит)</div>
+    <span class="arrow">→</span>
+    <div class="step"><span class="t">3. Звонок</span>LLM отыгрывает разговор по описанию поведения — <b>не зная</b>, играет она будущего покупателя или нет</div>
+    <span class="arrow">→</span>
+    <div class="step"><span class="t">4. Строка данных</span>Сохраняем расшифровку + ответ как обучающий пример</div>
+  </div>
+  <p>Правильный ответ задаётся <b>до</b> разговора и отдельно от текста — поэтому модель не может
+  выучить «подсказку» вместо смысла. Любые синтетические данные у нас <b>всегда</b> помечены как
+  синтетические. Реальные звонки — отдельный, по-настоящему собранный набор (живой агент,
+  реальные исходы), и мы честно указываем его небольшой размер: <b>31 звонок</b>.</p>
+
+  <div class="pgnum">1 / 3</div>
+</section>
+
+<!-- ===================== СТРАНИЦА 2 ===================== -->
+<section class="page">
+  <h2><span class="n">4</span> Метод и многослойная проверка</h2>
+  <p>Модель: <b>логистическая регрессия</b> на признаках из текста (символьные n-граммы TF-IDF,
+  устойчивые к русской морфологии) плюс структурные признаки (полнота полей, число реплик, длины).
+  Главное здесь не модель, а <b>лестница проверок</b>, которая отделяет настоящий сигнал от
+  случайности и от особенностей генератора:</p>
+  <div class="flow">
+    <div class="step"><span class="t">Кросс-валидация</span>базовая оценка качества на отложенных данных</div>
+    <span class="arrow">→</span>
+    <div class="step"><span class="t">Другие нейросети</span>звонки сгенерированы разными моделями (Claude, GPT-4o&nbsp;mini, GPT-5, Gemini) — проверяем, что качество не держится на одном генераторе</div>
+    <span class="arrow">→</span>
+    <div class="step"><span class="t">Тест на утечку</span>специально «глупая» модель смотрит только на форму текста, а не на смысл. Будь в данных способ угадать ответ по форме — она бы его нашла. Дала <b>0.58</b>, почти случайность → такого способа нет</div>
+    <span class="arrow">→</span>
+    <div class="step"><span class="t">Реальные звонки</span>31 звонок; считаем не одно число, а <b>диапазон</b>, в котором лежит настоящее качество (на малой выборке одна цифра ненадёжна)</div>
+  </div>
+
+  <h2><span class="n">5</span> Результаты</h2>
+  <p>На симуляции обученная модель обходит правила. Но на реальных звонках она <b>разваливается</b>,
+  а простые правила, наоборот, продолжают работать. Лучший результат — у оценки заявки через LLM.</p>
+  <table>
+    <tr>
+      <th class="l">Подход (метрика — AUC)</th>
+      <th>Симуляция<br><span class="mut" style="font-weight:400">n=375</span></th>
+      <th>Другая нейросеть<br><span class="mut" style="font-weight:400">n=300</span></th>
+      <th>Реальность<br><span class="mut" style="font-weight:400">n=31</span></th>
+    </tr>
+    <tr><td class="l">Обученная модель (текст)</td><td>0.67</td><td>0.68</td><td class="r">0.39</td></tr>
+    <tr><td class="l">Простые правила (ручные поля)</td><td>0.64</td><td>0.61</td><td class="g">0.66</td></tr>
+    <tr><td class="l">Правила на полях, извлечённых нейросетью</td><td class="dash">—</td><td class="dash">—</td><td class="g">0.76</td></tr>
+    <tr><td class="l">Оценка заявки через LLM (что в проде)</td><td class="dash">—</td><td class="dash">—</td><td class="g">0.80</td></tr>
+  </table>
+  <p class="mut" style="font-size:11px">AUC: 0.5 — случайность, 1.0 — идеал. На реальных звонках выборка маленькая,
+  доверительные интервалы широкие — это рабочее направление, а не финальный замер.</p>
+
+  <h2><span class="n">6</span> Почему так — и в чём вывод</h2>
+  <div class="split">
+    <div class="box kak">
+      <div class="h">Модель читала, КАК сказано</div>
+      Обученная модель цеплялась за <b>манеру речи</b> конкретного генератора. На реальных живых
+      звонках манера другая — и качество падает ниже случайного (0.67 → 0.39).
+    </div>
+    <div class="box chto">
+      <div class="h">Правила и LLM читают, ЧТО сказано</div>
+      Они опираются на <b>факты</b> (класс, цель, срок) — и на реальных звонках продолжают работать.
+      А LLM обходит правила не хитрой формулой, а тем, что <b>точнее достаёт те же факты</b> из живой речи.
+    </div>
+  </div>
+  <p>Это видно по отдельному эксперименту: те же простые правила, но факты для них извлекла
+  нейросеть, дают <b>0.76</b> вместо 0.66. Значит, разница между правилами и LLM — в основном
+  про <b>извлечение фактов</b>, а не про алгоритм оценки.</p>
+
+  <div class="note">
+    <b>Ключевое решение.</b> Когда на более реалистичных звонках качество обученной модели стало
+    подозрительно падать, мы <b>не стали катить её в прод</b>. Последующий тест на реальных
+    звонках подтвердил, что это решение было верным: модель ранжировала бы очередь почти наоборот
+    и тихо сливала бы лучшие заявки. Строгая проверка окупилась <b>до</b> внедрения, а не после.
+  </div>
+
+  <div class="pgnum">2 / 3</div>
+</section>
+
+<!-- ===================== СТРАНИЦА 3 ===================== -->
+<section class="page">
+  <h2><span class="n">7</span> Продуктовое решение и эффект</h2>
+  <ul>
+    <li><b>Что внедряем:</b> ранжировать обзвон по <b>оценке заявки через LLM</b>. Если нужен дешёвый
+    локальный вариант — нейросеть достаёт факты, простые правила считают балл (это уже 0.76).
+    Обученную текстовую модель — не внедряем.</li>
+    <li><b>Эффект на реальных данных:</b> если звонить в порядке LLM-оценки, в первых 20% обзвона
+    оказывается <b>83% будущих покупателей</b> вместо 48% при случайном порядке — это <b>в 1.7 раза
+    больше продаж</b> за тот же час менеджера.</li>
+    <li><b>Куда растёт продукт:</b> от оценки и сортировки заявок — к полному первому контакту на AI
+    (прогрев, напоминания, запись на пробный урок, доведение до оплаты). Цель — стать
+    инфраструктурой, без которой онлайн-школа не запускает курс, как сегодня не работают без CRM.</li>
+  </ul>
+
+  <h2><span class="n">8</span> Что в этом ценно методологически</h2>
+  <ul>
+    <li>Данные построены так, что в них <b>нельзя подсмотреть ответ</b> (правильная метка задаётся в
+    коде до разговора, отдельно от текста).</li>
+    <li>Проверка в несколько слоёв — кросс-валидация, другой генератор, тест на утечку, реальные
+    звонки с доверительными интервалами — <b>поймала разрыв «симуляция → реальность» до внедрения</b>.</li>
+    <li>Честный отрицательный результат (обученная модель не переносится) превращён в конструктивный
+    вывод: <b>что именно</b> внедрять и <b>почему</b>.</li>
+  </ul>
+
+  <h2><span class="n">9</span> Как проект закрывает критерии конкурса</h2>
+  <div class="crit">
+    <div class="c"><div class="h">Разработка и инженерия</div>
+      <b>Прод:</b> Python/FastAPI-сервис, async SQLAlchemy + Alembic-миграции, Postgres;
+      <b>Docker + docker-compose</b>, развёрнут на удалённом сервере; чистая (гексагональная)
+      архитектура — domain / ports / adapters / repositories. <b>Голосовой MVP:</b> разговор в
+      реальном времени (Grok / OpenAI Realtime / ElevenLabs, телефония Voximplant), ~25 тестов
+      включая security. <b>ML-репозиторий:</b> полный пайплайн от генерации синтетических звонков
+      до сравнения трёх скореров (генерация LLM → признаки → обучение → оценка на трёх выборках),
+      запуск одной командой (Makefile), CI (GitHub Actions), эксперименты в MLflow, 59 автотестов
+      (вкл. тест на утечку и проверку паритета с прод-правилами).</div>
+    <div class="c"><div class="h">Data Science</div>
+      Понимаем специфику данных: где синтетика, где реальные звонки, где риск утечки. Есть
+      разведочный анализ (EDA) и предобработка текста в числовые признаки. Выбор модели обоснован
+      (простая калиброванная логистическая регрессия против бустинга). Эксперименты с метриками
+      <b>порядка очереди</b> (precision@k, NDCG) и калибровкой. Валидация — несколько независимых
+      слоёв с доверительными интервалами.</div>
+    <div class="c"><div class="h">Применение ИИ</div>
+      Разработку вели с <b>AI-агентами</b> (Claude Code, superpowers, spec-kit): они помогали писать
+      код, генерировать и проверять гипотезы, вести спецификации и планы. LLM использован двояко —
+      как генератор обучающих данных без утечки и как рабочий оцениватель заявок в проде
+      (GPT-4o-mini).</div>
+    <div class="c"><div class="h">Продуктовое мышление</div>
+      Проблема сформулирована от выручки: правильный порядок обзвона → больше продаж за тот же час.
+      Аудитория — онлайн-школы. Прямых конкурентов на сегменте по сути нет: альтернатива — делать
+      первый контакт вручную или не делать вовсе. MVP развёрнут, есть <b>платящие клиенты</b> — это
+      и есть обратная связь рынка. Эффект измерен: <b>1.7×</b> покупателей в верхней части очереди.</div>
+    <div class="c" style="grid-column:1/-1;background:var(--soft);border-color:#c7d2fe">
+      <div class="h">Главная мысль</div>
+      Ценность — в связке: <b>работающий AI-First продукт</b> с платящими клиентами и <b>AI-native
+      способ работы</b> — код, гипотезы и проверки мы ведём через <b>AI-агентов</b>. Плюс дисциплина
+      решений: внедряем только то, что подтвердилось на реальных данных, а не на удобной симуляции,
+      и готовы <b>не катить</b>, если сигнал ненадёжен. Эта связка работает на любой новой функции
+      продукта; показанный эксперимент — лишь один её пример.</div>
+  </div>
+
+  <div class="pgnum">3 / 3</div>
+</section>
+
+</body>
+</html>

@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FirstContact — обучаемый скоринг лидов · JMLC</title>
+<style>
+  :root{
+    --ink:#0f172a; --muted:#64748b; --line:#e2e8f0;
+    --accent:#4338ca; --accent2:#6366f1;
+    --good:#059669; --bad:#dc2626;
+    --bg:#ffffff; --deckbg:#0b1020;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{
+    background:var(--deckbg);
+    color:var(--ink);
+    font-family:-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
+    overflow:hidden;
+  }
+  #deck{position:fixed;inset:0}
+  .slide{
+    position:absolute;inset:0;background:var(--bg);
+    display:flex;flex-direction:column;justify-content:center;
+    padding:8vh 9vw;opacity:0;visibility:hidden;
+    transition:opacity .25s ease;cursor:default;
+  }
+  .slide.active{opacity:1;visibility:visible}
+  h2{
+    font-size:clamp(24px,3.8vw,42px);margin:0 0 .7em;line-height:1.1;
+    padding-bottom:.25em;border-bottom:3px solid var(--accent);display:inline-block;
+  }
+  ul,ol{margin:.2em 0 0;padding-left:1.1em}
+  li{font-size:clamp(17px,2.5vw,27px);line-height:1.5;margin:.55em 0;color:#1e293b}
+  li::marker{color:var(--accent2)}
+  .lead{font-size:clamp(17px,2.5vw,26px);color:#1e293b;margin:.1em 0 .7em;
+        background:#f1f5f9;border-left:4px solid var(--accent);padding:.55em .8em;border-radius:6px}
+  b,.num{color:var(--accent);font-weight:700}
+  .tag{font-size:.62em;background:#eef2ff;color:var(--accent);border:1px solid #c7d2fe;
+       border-radius:999px;padding:.12em .7em;vertical-align:middle;font-weight:600}
+  .note{margin-top:1.1em;color:var(--muted);font-size:clamp(14px,1.9vw,20px);font-style:italic}
+
+  /* title */
+  .title{justify-content:center}
+  .title h1{font-size:clamp(30px,5.2vw,58px);line-height:1.08;margin:0 0 .5em;letter-spacing:-.01em}
+  .title .sub{font-size:clamp(17px,2.4vw,26px);color:#334155;max-width:24em;line-height:1.45}
+  .title .meta{margin-top:2em;color:var(--muted);font-size:clamp(14px,1.8vw,20px)}
+  .title .rule{width:88px;height:6px;background:var(--accent);border-radius:3px;margin:0 0 1.4em}
+
+  /* stat cards */
+  .stats{display:flex;gap:clamp(14px,3vw,40px);flex-wrap:wrap;margin:.4em 0 .2em}
+  .stat{flex:1 1 120px}
+  .stat .val{font-size:clamp(40px,8vw,92px);font-weight:800;line-height:1;letter-spacing:-.02em}
+  .stat .lbl{font-size:clamp(13px,1.8vw,19px);color:var(--muted);margin-top:.4em;font-weight:600}
+  .stat.good .val{color:var(--good)} .stat.bad .val{color:var(--bad)} .stat.key .val{color:var(--accent)}
+  .clincher{margin-top:1.3em;font-size:clamp(16px,2.3vw,25px);line-height:1.5}
+  .compare2{font-size:clamp(16px,2.2vw,24px);color:#1e293b;margin-top:.6em}
+
+  /* dark climax slide */
+  .slide.dark{background:var(--deckbg);color:#e5e7eb}
+  .slide.dark h2{color:#fff;border-color:var(--accent2)}
+  .slide.dark .stat .lbl{color:#94a3b8}
+  .slide.dark .clincher{color:#cbd5e1}
+  .slide.dark .stat.good .val{color:#34d399}
+  .slide.dark .stat.bad .val{color:#f87171}
+
+  /* table (backup) */
+  table{border-collapse:collapse;margin:.3em 0;font-size:clamp(14px,2vw,22px);width:100%}
+  th,td{border:1px solid var(--line);padding:.5em .7em;text-align:center}
+  th{background:#f8fafc;color:#334155}
+  td.m{color:var(--muted)}
+  .footn{margin-top:1em;color:var(--muted);font-size:clamp(13px,1.7vw,18px);line-height:1.5}
+
+  /* product flow diagram */
+  .flow{display:flex;flex-direction:column;align-items:center;gap:.3em;margin-top:.2em}
+  .node{background:#eef2ff;border:1.5px solid #c7d2fe;border-radius:10px;padding:.38em .9em;
+        font-size:clamp(13px,1.85vw,20px);font-weight:600;color:#1e293b;text-align:center;max-width:94%}
+  .node .sub{display:block;font-weight:400;color:var(--muted);font-size:.78em;margin-top:.08em}
+  .node.exp{background:#fff7ed;border-color:#fb923c;color:#9a3412}
+  .node.win{background:#ecfdf5;border-color:#34d399;color:#065f46}
+  .flow .arrow{color:var(--accent2);font-size:1.2em;line-height:.9}
+  .flowrow{display:flex;align-items:center;gap:.7em;flex-wrap:wrap;justify-content:center}
+  .fly{margin-top:.4em;font-size:clamp(12px,1.6vw,17px);color:var(--accent);font-style:italic}
+
+  /* chrome */
+  #prog{position:fixed;top:0;left:0;height:4px;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0;transition:width .25s;z-index:30}
+  #controls{position:fixed;bottom:16px;right:18px;display:flex;gap:8px;align-items:center;z-index:30}
+  #controls button{
+    border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:8px;
+    padding:.45em .8em;font-size:15px;cursor:pointer;box-shadow:0 1px 3px rgba(15,23,42,.12)
+  }
+  #controls button:hover{border-color:var(--accent2);color:var(--accent)}
+  #counter{font-variant-numeric:tabular-nums;color:#fff;background:rgba(15,16,32,.65);
+           border-radius:8px;padding:.45em .7em;font-size:14px;min-width:62px;text-align:center}
+  #hint{position:fixed;bottom:18px;left:18px;color:#94a3b8;font-size:12.5px;z-index:30;user-select:none}
+  #notes{position:fixed;left:0;right:0;bottom:0;transform:translateY(101%);transition:transform .28s ease;
+         background:#0b1020;color:#e5e7eb;padding:18px 22px 22px;z-index:40;
+         box-shadow:0 -8px 30px rgba(0,0,0,.35);max-height:46vh;overflow:auto}
+  #notes.show{transform:translateY(0)}
+  #notes .cap{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#818cf8;margin-bottom:.5em;font-weight:700}
+  #notes-body{font-size:clamp(15px,2vw,20px);line-height:1.55;max-width:60em}
+  .speaker{display:none}
+  @media print{ .slide{position:relative;opacity:1;visibility:visible;page-break-after:always;height:100vh}
+                #prog,#controls,#hint,#notes{display:none} }
+</style>
+</head>
+<body>
+<div id="prog"></div>
+
+<div id="deck">
+
+  <!-- 0 — Титул -->
+  <section class="slide title">
+    <div class="rule"></div>
+    <h1>FirstContact<br>AI-SDR для edtech</h1>
+    <div class="sub">Голосовой агент, который квалифицирует и триажит заявки на курсы. Внутри — один строгий ML-эксперимент: кому перезвонить первым.</div>
+    <div class="meta">[Имя автора] · JMLC · 2026</div>
+    <div class="speaker">Добрый день, меня зовут […]. Я расскажу об обучаемом скоринге лидов для голосового агента — и о том, как мы проверяли, что выученный сигнал действительно реальный, а не результат самообмана.</div>
+  </section>
+
+  <!-- 1 — Стартап -->
+  <section class="slide">
+    <h2>Стартап: AI-SDR для edtech</h2>
+    <ul>
+      <li><b>FirstContact</b> — голосовой AI-агент, ведущий верх воронки продаж: ловит заявку, <b>квалифицирует и триажит</b> за ~90 секунд</li>
+      <li><b>Развёрнут, есть платящие клиенты</b> — работает на живых лидах edtech-школ</li>
+      <li>Видение: <b>must-have AI-SDR</b> для любого онлайн-курса — как сегодня не запускают курс без CRM, завтра не запустят без AI-продавца</li>
+    </ul>
+    <div class="speaker">FirstContact — это мой AI-стартап: голосовой агент, который заменяет первую линию отдела продаж. Ловит входящую заявку, за полторы минуты квалифицирует и триажит лида — кто горячий, кому что нужно. Продукт уже развёрнут и приносит выручку, работает на живых лидах. Видение большое: вырасти в must-have AI-SDR для edtech — продавца, без которого запускать онлайн-курс будет так же странно, как сегодня работать без CRM. А то, что покажу дальше, — один строгий ML-эксперимент внутри этого продукта.</div>
+  </section>
+
+  <!-- Рынок и позиционирование -->
+  <section class="slide">
+    <h2>Рынок: низкая конкуренция и реальный запрос</h2>
+    <ul>
+      <li><b>Кто платит:</b> edtech-школы и авторы онлайн-курсов — теряют деньги, когда горячие лиды остывают в очереди</li>
+      <li><b>Главный конкурент — «ничего не делать»:</b> лид обрабатывают вручную или он просто остывает</li>
+      <li><b>Прямых аналогов нет:</b> вертикальные AI-SDR — новая категория. Горизонтальные платформы и инфра (Vapi / Bland / Retell) эту работу не делают — мы на них <i>строимся</i></li>
+      <li><b>Риск:</b> быть первым — нужно создавать категорию и обучать рынок</li>
+    </ul>
+  </section>
+
+  <!-- 2 — Схема (поток данных) -->
+  <section class="slide">
+    <h2>Как это работает — и где живёт эксперимент</h2>
+    <div class="flow">
+      <div class="node">Входящая заявка <span class="sub">сайт · Telegram-бот</span></div>
+      <div class="arrow">↓</div>
+      <div class="node">Софья — голосовой AI-агент <span class="sub">квалифицирует за ~90 с · GPT Realtime</span></div>
+      <div class="arrow">↓</div>
+      <div class="node">Квалификация <span class="sub">поля + вердикт + балл · GPT-4o-mini</span></div>
+      <div class="arrow">↓</div>
+      <div class="node">CRM <span class="sub">лид + реальный исход (купил?)</span></div>
+      <div class="arrow">↓</div>
+      <div class="flowrow">
+        <div class="node">Приоритет обзвона <span class="sub">кому звонить первым</span></div>
+        <div class="arrow">⟵</div>
+        <div class="node exp">★ ЭКСПЕРИМЕНТ <span class="sub">чем ранжировать очередь?</span></div>
+      </div>
+      <div class="arrow">↓</div>
+      <div class="node win">Менеджер перезванивает → продажа</div>
+      <div class="fly">↺ исход возвращается в данные → продукт умнеет (data flywheel)</div>
+    </div>
+    <div class="speaker">Вот как устроен продукт. Заявка с сайта или бота попадает к голосовому агенту — Софья за полторы минуты ведёт диалог и квалифицирует. Из разговора достаются поля и ставится вердикт, всё ложится в CRM вместе с реальным исходом — купил или нет. И вот ключевой узел: приоритет обзвона — кому из квалифицированных звонить первым. Именно сюда встроен мой эксперимент: чем правильно ранжировать эту очередь. А исход каждой сделки возвращается в данные — это маховик, на котором продукт умнеет.</div>
+  </section>
+
+  <!-- 3 — Продукт и проблема (постановка эксперимента) -->
+  <section class="slide">
+    <h2>Эксперимент: кому звонить первым?</h2>
+    <ul>
+      <li>Менеджеры успевают перезвонить не всем — от порядка зависит, сколько лидов в итоге запишется (а это деньги)</li>
+      <li>Сейчас этот порядок задают простые правила по ключевым словам</li>
+      <li>Вопрос: решит ли задачу точнее обученная модель (ML) или нейросеть (AI)?</li>
+    </ul>
+    <div class="speaker">Внутри продукта есть один узел, где живут деньги: кому из квалифицированных лидов перезвонить первым. Изначально мы строили эту очередь рукописными правилами — по ключевым словам. И задались естественным вопросом фаундера: насколько эффективнее эту задачу можно решить с ML и AI? Но решили сразу проверять честно — не радоваться красивой метрике на тесте, а доходить до самого реального исхода: купил клиент или нет. Дальше — как именно я это проверял.</div>
+  </section>
+
+  <!-- 2 — Сложность -->
+  <section class="slide">
+    <h2>Сложность: обучать не на чем</h2>
+    <ul>
+      <li>Продукт новый — размеченных исходов ещё нет <span class="tag">cold-start</span></li>
+      <li>Решение: сгенерировать обучающие звонки нейросетью</li>
+      <li>Риск: на сгенерированных данных легко обучить <b>ложный сигнал</b></li>
+    </ul>
+    <div class="speaker">Здесь возникает сложность. Продукт новый — у нас ещё нет истории, кто из обратившихся в итоге записался. Обучать модель не на чем. Выход — сгенерировать обучающие звонки нейросетью: пусть она отыграет разных клиентов. Но в этом подходе есть тонкость, которую часто упускают: на сгенерированных данных легко обучить модель, которая выглядит убедительно, но реального сигнала не несёт. Поэтому центральной задачей стал не сам скоринг, а защита от такого самообмана.</div>
+  </section>
+
+  <!-- 3 — Метод -->
+  <section class="slide">
+    <h2>Главное — не обмануть самих себя</h2>
+    <div class="lead">Данных не было — мы их сгенерировали. Хитрость: ответ «купит / нет» задаём сами и прячем от нейросети, которая пишет звонок, — чтобы модель не могла его подсмотреть.</div>
+    <div class="flow">
+      <div class="node">1. Придумываем «фейкового» лида <span class="sub">его свойства (готовность, срочность, бюджет) задаём числами сами</span></div>
+      <div class="arrow">↓ из свойств делаем две вещи — по отдельности ↓</div>
+      <div class="flowrow">
+        <div class="node win">Ответ: купит или нет <span class="sub">считаем формулой — это «правда», которую модель будет угадывать</span></div>
+        <div class="node">Описание поведения словами <span class="sub">без ответа → отдаём нейросети</span></div>
+      </div>
+      <div class="arrow">↓</div>
+      <div class="node">2. Нейросеть разыгрывает звонок <span class="sub">по описанию, не зная ответа</span></div>
+      <div class="arrow">↓</div>
+      <div class="node">3. Учим модель по тексту звонка предсказывать «купит / нет»</div>
+      <div class="arrow">↓</div>
+      <div class="node exp">4. Проверяем модель — сначала на придуманных звонках, потом на настоящих</div>
+    </div>
+    <div class="speaker">Наш метод. Во-первых, по построению: правильный ответ — запишется клиент или нет — мы вычисляем сами, в коде, на основе скрытых характеристик персонажа. А нейросеть отыгрывает этот характер вслепую, самого ответа она не видит. Поэтому «предсказать ответ» уже нельзя свести к тому, чтобы вычитать его из текста. Во-вторых, ещё до единого реального звонка мы проводим три проверки. Первая гарантирует, что ответ не попал в текст. Вторая — контроль утечки: мы берём заведомо примитивную модель, и если даже она уверенно угадывает результат, значит ответ лежит в очевидных словах; у нас этого не произошло. Третья — мы прогоняем модель на всё более реалистичных звонках и смотрим, сохраняется ли её преимущество. И за кадром — полноценная DS-кухня: я перебрал фичи и абляции вплоть до мультиязычных эмбеддингов, и все упёрлись примерно в 0.58 — значит, дело не в фичах; плюс кросс-валидация на пяти фолдах, ранжирующие метрики, калибровка и кривая чувствительности. Детали — на резервном слайде.</div>
+  </section>
+
+  <!-- 4 — Результат на симуляции -->
+  <section class="slide">
+    <h2>Результат на симуляции</h2>
+    <div class="stats">
+      <div class="stat key"><div class="val">0.67</div><div class="lbl">Модель · AUC</div></div>
+      <div class="stat"><div class="val" style="color:var(--muted)">0.64</div><div class="lbl">Правила · AUC</div></div>
+    </div>
+    <div class="compare2">В верхних 20% очереди — <b>75%</b> будущих покупателей против <b>65%</b> у правил · 1800 звонков</div>
+    <div class="speaker">На симуляции результат положительный: на 1800 звонках модель превосходит правила по всем метрикам. В верхних двадцати процентах очереди у неё три четверти будущих покупателей против двух третей у правил. Важная деталь о честности: самый первый прогон дал результат, близкий к случайному. Мы не стали незаметно подкручивать модель — мы разобрались и увидели, что недостаточно предсказуемой была сама задача, и исправили симуляцию, а не модель. И показали графиком, что преимущество сохраняется на всём диапазоне сложности. Казалось бы, успех. Но дальше пошла первая трещина.</div>
+  </section>
+
+  <!-- Трещина (эрозия под реализмом) -->
+  <section class="slide">
+    <h2>Звонки стали реалистичнее — и модель перестала выигрывать</h2>
+    <ul>
+      <li>Параллельно развивал продукт и сделал сгенерированные звонки больше похожими на реальные (другая нейросеть, живая речь с запинками)</li>
+      <li>Преимущество модели стало таять: чем реалистичнее звонок, тем хуже она работала</li>
+      <li>На самых реалистичных звонках простые правила уже её обгоняли</li>
+      <li>Решили <b>не катить модель в прод</b>: падение качества выглядело подозрительно</li>
+    </ul>
+    <div class="speaker">И тут пошла первая трещина. Я растил продукт параллельно с исследованием — и стал делать сгенерированные звонки реалистичнее: другой генератор, живые «эээ» и «ммм», боевой промпт Софьи. И преимущество модели начало плыть: чем реалистичнее звонок, тем хуже она держится. На самых живых звонках простые правила её уже обходили. Это меня насторожило — похоже, победа держалась на стиле конкретного генератора, а не на реальном качестве лида. Поэтому я устроил честный решающий тест сразу втроём: моя модель, простые правила и ChatGPT, оценивающий лид по тому же рубрик-промпту, что и сам продукт.</div>
+  </section>
+
+  <!-- 5 — Проверка реальностью (кульминация) -->
+  <section class="slide dark">
+    <h2>Решающий тест: 3 подхода на 31 реальном звонке</h2>
+    <div class="stats" style="gap:clamp(10px,2vw,30px)">
+      <div class="stat bad"><div class="val" style="font-size:clamp(30px,5.2vw,62px)">0.39</div><div class="lbl">модель (текст)</div></div>
+      <div class="stat good"><div class="val" style="font-size:clamp(30px,5.2vw,62px)">0.66</div><div class="lbl">правила</div></div>
+      <div class="stat good"><div class="val" style="font-size:clamp(30px,5.2vw,62px)">0.76</div><div class="lbl">+ LLM-извлечение</div></div>
+      <div class="stat good"><div class="val" style="font-size:clamp(30px,5.2vw,62px)">0.80</div><div class="lbl">LLM-скорер</div></div>
+    </div>
+    <div class="clincher">Наша модель цеплялась за то, <b style="color:#f87171">КАК</b> человек говорит, — за манеру речи → на реальных звонках разваливается (0.67→0.39). Правила и LLM смотрят на то, <b style="color:#34d399">ЧТО</b> человек сказал, — на факты → и на реальных звонках работают. А LLM обходит правила не хитрой формулой, а тем, что <b style="color:#34d399">точнее достаёт факты</b> из живой речи.</div>
+    <div style="margin-top:.7em;font-size:clamp(16px,2.4vw,25px);font-weight:700;color:#fbbf24">Тест на реальных звонках подтвердил: <b>решение не катить было верным</b>.</div>
+    <div class="speaker">Мы собрали 31 настоящий звонок с живого агента — реальная расшифровка и реальный исход — и построили честную лестницу. Наша текстовая модель — 0.39, ниже случайного: она смотрела на то, КАК сказано, на стиль речи, а не на факты. Простые правила, которые читают факты — класс, цель, срок — работают и на реальных звонках: 0.66. Если те же правила получают факты, извлечённые нейросетью, — уже 0.76. А целиком LLM-скорер — 0.80, лучший. И ключевое: LLM обходит правила не из-за более умной формулы, а потому что точнее вытаскивает те же факты из живой, кривой речи. То есть выигрывает тот, кто читает, ЧТО сказано, а не КАК. И это подтвердило раннюю тревогу: модель не работает на реальных звонках — поэтому в прод я её не выкатил, она ранжировала бы очередь почти наоборот и втихую сливала бы лучших лидов.</div>
+  </section>
+
+  <!-- 6 — Вывод -->
+  <section class="slide">
+    <h2>Вывод: что катить и в чём вклад</h2>
+    <ul>
+      <li><b>Что это даёт:</b> если звонить в порядке LLM-оценки, в первых 20% обзвона — <b>83% будущих покупателей</b> вместо 48% при случайном порядке. Это <b>в 1.7 раза больше продаж</b> за тот же час менеджера</li>
+      <li><b>Что внедряем:</b> оценку лида через LLM (или дешевле — нейросеть достаёт факты, правила считают, ≈ 0.76). Текстовую модель — нет</li>
+      <li><b>Главный вклад:</b> методология, которая отличила настоящий сигнал от особенностей генератора <b>ещё до внедрения</b></li>
+      <li><b>Ограничения:</b> оценки на симуляции искусственные; 31 реальный звонок — мало, интервалы широкие. Это рабочее направление, а не финальный замер</li>
+    </ul>
+    <div class="speaker">Главный вывод теперь двойной. Первое, продуктовое: на реальных звонках ранжирование по LLM-скореру даёт около 83 процентов реальных покупателей в топ-20 процентах обзвона против 48 случайно — это в 1.7 раза больше продаж на тот же час менеджера. Поэтому решение — катить LLM-скоринг; а если нужен дешёвый локальный вариант, нейросеть достаёт поля, простые правила считают, и это уже 0.76. Второе, исследовательское: главный вклад — строгая методология, которая отличила реальный сигнал от артефакта генератора ещё до внедрения. Честно про ограничения: метки на симуляции искусственные, 31 звонок мало, доверительные интервалы широкие — это направление, а не финальный бенчмарк. А теперь — куда этот продукт растёт.</div>
+  </section>
+
+  <!-- Роадмап -->
+  <section class="slide">
+    <h2>Роадмап: от квалификатора к полному AI-SDR</h2>
+    <ul>
+      <li><b>Сейчас:</b> оцениваем и сортируем входящие заявки — это работающий продукт, за него уже платят</li>
+      <li><b>Дальше:</b> весь первый контакт с клиентом на AI — прогрев, напоминания, запись на пробный урок, доведение до оплаты</li>
+      <li><b>Цель:</b> онлайн-школа не запускает курс без AI-SDR — как сегодня не работают без CRM</li>
+      <li>А показанный эксперимент — пример того, <b>как мы принимаем решения по ML: строго и по делу</b></li>
+    </ul>
+    <div class="speaker">Куда это растёт. Сейчас продукт закрывает квалификацию и триаж входящих — и за это уже платят. Дальше — весь верх воронки на AI: автоматический прогрев, follow-up, запись на пробное, дожатие. Цель — стать инфраструктурой, без которой edtech-курс просто не запускают, как сегодня без CRM. А эксперимент, который я показал, — это пример того, как мы принимаем ML-решения: строго и честно. Спасибо.</div>
+  </section>
+
+  <!-- Бэкап: ML/DS под капотом -->
+  <section class="slide">
+    <h2>Под капотом: модель и признаки — резерв для вопросов</h2>
+    <ul>
+      <li><b>Признаки:</b> символьные n-граммы TF-IDF (устойчивы к русской морфологии) + структурные: полнота полей, число реплик, длины</li>
+      <li><b>Что пробовали менять:</b> словарные n-граммы, только реплики лида, поля как текст, мультиязычные эмбеддинги — всё упёрлось в CV-AUC <b>0.55–0.58</b>. Дело не в признаках, а в самой задаче</li>
+      <li><b>Модель:</b> логистическая регрессия — откалибрована, воспроизводима; пробовали и градиентный бустинг</li>
+      <li><b>Метрики:</b> ROC-AUC, PR-AUC; precision@k и NDCG (качество ранжирования); калибровка — Brier и кривая надёжности</li>
+    </ul>
+    <div class="speaker">Резервный слайд по самой модели: признаки и всё, что пробовали менять вплоть до эмбеддингов, выбор модели, метрики ранжирования и калибровка. Ключевой вывод тут — упёрлись в 0.55–0.58 на всех вариантах признаков, значит дело было не в признаках, а в самой задаче.</div>
+  </section>
+
+  <!-- Бэкап: валидация и диагностика -->
+  <section class="slide">
+    <h2>Под капотом: валидация и диагностика — резерв для вопросов</h2>
+    <ul>
+      <li><b>Валидация слоями:</b> 5-fold кросс-валидация → звонки от другой нейросети → тест на утечку (0.58) → реальные звонки с бутстрэп-интервалами</li>
+      <li><b>Почему первый прогон был как монетка:</b> даже идеальный оракул при нулевом шуме давал лишь <b>~0.66</b> — метка была почти случайной по устройству самой симуляции</li>
+      <li><b>Что сделали:</b> починили <b>симуляцию, а не модель</b> — после рекалибровки оракул даёт ~0.78</li>
+      <li><b>Проверка на честность:</b> кривая чувствительности — преимущество держится на всём диапазоне сложности, это не подбор удобной точки</li>
+    </ul>
+    <div class="speaker">Второй резервный слайд — про валидацию и диагностику. Валидация в несколько слоёв. И главный сюжет: почему первый прогон был близок к случайному — даже идеальный оракул давал лишь 0.66, значит метка была почти случайной по устройству симуляции. Мы это диагностировали и починили саму симуляцию, а не подкручивали модель, после чего показали кривую чувствительности, что преимущество держится на всём диапазоне.</div>
+  </section>
+
+  <!-- 7 — Резервный -->
+  <section class="slide">
+    <h2>Резервный слайд — для вопросов</h2>
+    <table>
+      <tr><th>AUC</th><th>Симуляция (тест)</th><th>Другая нейросеть</th><th>Реальность (N=31)</th></tr>
+      <tr><td>Модель (текст)</td><td>0.67</td><td>0.675</td><td style="color:var(--bad);font-weight:700">0.39</td></tr>
+      <tr><td>Правила на ручных полях</td><td>0.64</td><td>0.61</td><td style="color:var(--good);font-weight:700">0.66</td></tr>
+      <tr><td>Правила на полях от нейросети</td><td class="m">—</td><td class="m">—</td><td style="color:var(--good);font-weight:700">0.76</td></tr>
+      <tr><td>Оценка продукта (горячий/холодный)</td><td class="m">—</td><td class="m">—</td><td style="color:var(--good);font-weight:700">0.75</td></tr>
+      <tr><td>LLM-оценка лида (0–100)</td><td class="m">—</td><td class="m">—</td><td style="color:var(--good);font-weight:700">0.80</td></tr>
+    </table>
+    <div class="footn">Все числа — площадь под ROC-кривой (AUC): 0.5 — случайность, 1.0 — идеал. На реальных звонках N=31, поэтому интервалы широкие — это направление, а не финальный замер.</div>
+    <div class="speaker">Это резервный слайд с числами: показываешь его, если спросят про конкретные значения по всем трём выборкам или про то, как считались baseline-ы. Три отдельных вопроса — контроль утечки, откуда у LLM преимущество и наблюдение из продакшена — на следующем слайде.</div>
+  </section>
+
+  <!-- 8 — Резервный: три отдельных вопроса -->
+  <section class="slide">
+    <h2>Три частых вопроса — по отдельности</h2>
+    <ul>
+      <li><b>Не утечка ли это?</b> Специально собрали «тупую» модель, которая видит только поверхностные мелочи текста, а не смысл. Будь в данных спрятана подсказка про ответ — она бы её поймала. Дала <b>0.58</b>, почти случайность. Значит, основная модель училась на чём-то настоящем, а не на утечке. (А на реальных звонках её оценки идут даже против исхода — корреляция −0.46: она ранжировала бы очередь почти наоборот.)</li>
+      <li><b>Откуда у LLM преимущество над правилами — формула или речь?</b> Взяли те же простые правила, но факты для них достала нейросеть из расшифровки. Скакнуло с <b>0.66 до 0.76</b>. Значит, дело не в умной формуле, а в том, что нейросеть точнее вытаскивает факты из живой речи. Сам алгоритм оценки можно оставить простым.</li>
+      <li><b>Подтверждение из практики:</b> в самом продукте мы со временем и без этого исследования отказались от жёстких regex-правил и перешли на оценку лида через LLM (GPT-4o-mini). Продукт пришёл к тому же выводу, что и эксперимент.</li>
+    </ul>
+    <div class="speaker">Тоже резервный слайд: три вопроса, которые любят задавать, разнесены по отдельности. Первый — про утечку: тупая модель дала 0.58, значит сигнал настоящий; плюс на реале текстовая модель ранжирует почти наоборот. Второй — преимущество LLM в основном про извлечение фактов, а не про формулу: те же правила на полях от нейросети дают 0.76. Третий — продакшн сам пришёл к LLM-оценке, это независимое подтверждение вывода.</div>
+  </section>
+
+</div>
+
+<div id="counter">1 / 8</div>
+<div id="hint">← → листать · F — на весь экран</div>
+<div id="controls">
+  <button id="btn-prev">‹ Назад</button>
+  <button id="btn-next">Вперёд ›</button>
+</div>
+
+<aside id="notes">
+  <div class="cap">Что говоришь вслух</div>
+  <div id="notes-body"></div>
+</aside>
+
+<script>
+  const slides=[...document.querySelectorAll('.slide')];
+  let i=0;
+  const prog=document.getElementById('prog');
+  const counter=document.getElementById('counter');
+  const notes=document.getElementById('notes');
+  const notesBody=document.getElementById('notes-body');
+  function show(n){
+    i=Math.max(0,Math.min(slides.length-1,n));
+    slides.forEach((s,k)=>s.classList.toggle('active',k===i));
+    prog.style.width=((i+1)/slides.length*100)+'%';
+    counter.textContent=(i+1)+' / '+slides.length;
+    const sp=slides[i].querySelector('.speaker');
+    notesBody.innerHTML=sp?sp.innerHTML:'<em>—</em>';
+  }
+  const next=()=>show(i+1), prev=()=>show(i-1);
+  function toggleFs(){ if(!document.fullscreenElement){document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();} else {document.exitFullscreen&&document.exitFullscreen();} }
+  document.addEventListener('keydown',e=>{
+    const k=e.key;
+    if(k==='ArrowRight'||k==='PageDown'||k===' '){e.preventDefault();next();}
+    else if(k==='ArrowLeft'||k==='PageUp'){e.preventDefault();prev();}
+    else if(k==='Home'){show(0);} else if(k==='End'){show(slides.length-1);}
+    else if(k==='f'||k==='F'||k==='а'||k==='А'){toggleFs();}
+  });
+  document.getElementById('btn-next').onclick=e=>{e.stopPropagation();next();};
+  document.getElementById('btn-prev').onclick=e=>{e.stopPropagation();prev();};
+  show(0);
+</script>
+</body>
+</html>

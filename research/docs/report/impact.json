@@ -1,0 +1,37 @@
+{
+  "n": 31,
+  "positives": 15,
+  "base_rate": 0.484,
+  "callback_budget_k": 6,
+  "scorers": {
+    "LLM-балл (GPT fit)": {
+      "precision_at_20pct": 0.833,
+      "lift_over_base": 1.72,
+      "auc": 0.802
+    },
+    "Правила на GPT-полях": {
+      "precision_at_20pct": 0.833,
+      "lift_over_base": 1.72,
+      "auc": 0.76
+    },
+    "Правила на ручных полях": {
+      "precision_at_20pct": 0.333,
+      "lift_over_base": 0.69,
+      "auc": 0.662
+    },
+    "Вердикт продукта": {
+      "precision_at_20pct": 1.0,
+      "lift_over_base": 2.07,
+      "auc": 0.725
+    },
+    "модель (текст)": {
+      "precision_at_20pct": 0.333,
+      "lift_over_base": 0.69,
+      "auc": 0.392
+    },
+    "база (случайный обзвон)": {
+      "precision_at_20pct": 0.484,
+      "lift_over_base": 1.0
+    }
+  }
+}

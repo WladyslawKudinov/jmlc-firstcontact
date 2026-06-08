@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FirstContact — карта архитектуры</title>
+<style>
+  :root{
+    --bg:#0c0f14; --panel:#141a22; --panel2:#1b232e; --ink:#e7eef7; --muted:#93a4b7;
+    --solid:#3ad29f; --smell:#ff7a7a; --core:#6aa9e0; --gap:#e8c14a; --line:#26313f;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:32px}
+  .wrap{max-width:1180px;margin:0 auto}
+  h1{font-size:24px;margin:0 0 4px} .sub{color:var(--muted);margin:0 0 22px}
+  h2{font-size:15px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:30px 0 12px}
+  .legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+  .chip{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);
+    border-radius:8px;padding:6px 12px;font-size:13px}
+  .dot{width:12px;height:12px;border-radius:3px}
+  .diagram{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;overflow:auto}
+  .mermaid{min-width:760px}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px}
+  @media(max-width:780px){.cards{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .card.smell{border-color:#5a2a2a} .card.gap{border-color:#5a4d1e}
+  .card h3{margin:0 0 8px;font-size:15px;display:flex;align-items:center;gap:8px}
+  .card p{margin:6px 0;color:#cdd9e6;font-size:14px}
+  .card code{background:#0a0d12;border:1px solid var(--line);border-radius:5px;padding:1px 6px;
+    font:13px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;color:#cfe6ff}
+  .fix{background:linear-gradient(180deg,#0f3a2b,#0c2a20);border:1px solid #2c8c6a;border-radius:12px;
+    padding:16px 18px;margin-top:16px}
+  .fix h3{margin:0 0 8px;color:#bdf5dd}
+  .fix ol{margin:6px 0 0;padding-left:20px} .fix li{margin:4px 0;color:#d7f3e8}
+  .tag{font-size:11px;padding:2px 7px;border-radius:99px;border:1px solid currentColor}
+  .footer{color:var(--muted);font-size:12px;margin-top:26px;border-top:1px solid var(--line);padding-top:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>FirstContact — карта архитектуры голосового агента</h1>
+  <p class="sub">Два пути «поговорить как София» + общее ядро CRM. Подсвечено: <b style="color:var(--smell)">дубль</b> и <b style="color:var(--gap)">недостроенный шов</b>. Снимок ветки <code>feature/telephony-voximplant</code> · 2026-06-02</p>
+
+  <div class="legend">
+    <span class="chip"><span class="dot" style="background:var(--solid)"></span>готово / работает</span>
+    <span class="chip"><span class="dot" style="background:var(--core)"></span>общее ядро (reused 1-в-1)</span>
+    <span class="chip"><span class="dot" style="background:var(--smell)"></span>★ дубль логики — свести в один модуль</span>
+    <span class="chip"><span class="dot" style="background:var(--gap)"></span>дырка / TODO (помечено «later»)</span>
+  </div>
+
+  <div class="diagram">
+    <pre class="mermaid">
+flowchart TB
+  classDef solid fill:#103a2b,stroke:#3ad29f,color:#d6ffe9;
+  classDef smell fill:#4d1f1f,stroke:#ff7a7a,color:#ffe0e0,stroke-width:2px;
+  classDef core  fill:#16263f,stroke:#6aa9e0,color:#dcebff;
+  classDef gap   fill:#3e3614,stroke:#e8c14a,color:#fff4d1,stroke-width:2px,stroke-dasharray:6 4;
+
+  ilya("Илья / партнёр<br/>шлёт заявки"):::gap
+  leadsapi["POST /api/leads<br/>(приём)"]:::solid
+
+  subgraph SH ["ОБЩЕЕ ЯДРО · reused 1-в-1"]
+    scen[("scenarios.json<br/>промпт · collects · scoring")]:::core
+    store[("storage/<br/>memory · jsonfile · postgres")]:::core
+    savelead["lib/save-lead.js"]:::core
+    score["lib/scoring.js"]:::core
+    crm["crm · инбокс"]:::core
+  end
+
+  subgraph BR ["ПУТЬ 1 · браузер-звонок · ГОТОВ"]
+    app["public/app.js<br/>мик + плеер"]:::solid
+    session["POST /api/session<br/>★ собирает промпт + контекст лида"]:::smell
+    rt1["OpenAI Realtime"]:::solid
+  end
+
+  subgraph PH ["ПУТЬ 2 · телефон-звонок · ГОТОВ"]
+    calls["POST /api/calls<br/>триггер"]:::solid
+    vox["Voximplant<br/>callPSTN + аудио по wss<br/>(только телефон, без ИИ)"]:::solid
+    bridge["bridge-server.js<br/>wss · 1 сокет на звонок"]:::solid
+    orch["orchestrator.js — МОЗГ<br/>★ свой сбор промпта<br/>(НЕ заполняет caller_name)"]:::smell
+    media["openai-realtime.js + elevenlabs.js<br/>audio.js (codec/resample)"]:::solid
+  end
+
+  ilya --> leadsapi --> store
+  app --> session --> rt1 --> app
+  session -. читает .-> scen
+
+  calls --> vox --> bridge --> orch
+  orch <--> media
+  bridge -. читает .-> scen
+  orch -. свой промпт .-> scen
+  orch --> savelead --> store --> crm
+  score --- crm
+
+  crm -. "ДЫРКА: что триггерит звонок?" .-> calls
+  calls -. "едет только phone + scenarioId —<br/>поля заявки НЕ доходят до промпта" .-> orch
+    </pre>
+  </div>
+
+  <h2>Что реально «поехало» — ровно две вещи</h2>
+  <div class="cards">
+    <div class="card smell">
+      <h3>🔴 ★ Дубль: сборка промпта в двух местах</h3>
+      <p>Два «потребителя» Софии строят промпт и контекст лида независимо:</p>
+      <p><code>/api/session</code> — подставляет <code>{{caller_name}}</code>, <code>{{caller_role}}</code>, <code>{{subject_context}}</code>.</p>
+      <p><code>orchestrator.js</code> → <code>buildInstructions()</code> — берёт <code>system_prompt</code> как есть и плейсхолдеры <b>не заполняет</b>. По телефону София звучит обезличенно.</p>
+      <p style="color:var(--muted)">Лечится одним общим модулем <code>buildSessionPrompt(scenario, lead)</code>, который зовут оба пути.</p>
+    </div>
+    <div class="card gap">
+      <h3>🟡 Шов лид → звонок не достроен</h3>
+      <p>До звонка едет только <code>{ phone, scenarioId }</code> через <code>customData → meta</code>. Значит:</p>
+      <p>1. <b>Что триггерит звонок</b> по входящей заявке — пока ручной <code>/api/calls</code> (кнопка/авто — в «later»).</p>
+      <p>2. <b>Данные конкретной заявки</b> Ильи (имя, предмет) в промпт звонка не попадают.</p>
+      <p style="color:var(--muted)">Это незаконченный кусок, а не гниль — помечен «later» в спеке.</p>
+    </div>
+  </div>
+
+  <div class="fix">
+    <h3>✅ Как разъехать обратно (рефактор на пару часов, не переписывание)</h3>
+    <ol>
+      <li>Вынести сборку промпта/контекста в <code>lib/build-session-prompt.js</code> → зовут и <code>/api/session</code>, и <code>orchestrator.js</code>. Дубль исчезает, телефонная София становится именной.</li>
+      <li>Протащить поля лида в звонок: <code>/api/calls</code> кладёт их в <code>customData</code> → <code>meta</code> → в тот же общий модуль.</li>
+      <li>(позже) Решить триггер: кнопка «Позвонить» в <code>/crm</code> или авто-обзвон новых заявок.</li>
+    </ol>
+  </div>
+
+  <p class="footer">Файл сгенерирован как визуальная шпаргалка, не закоммичен (untracked) — удаляется в один клик. Схема рендерится через Mermaid (CDN); если открыто офлайн и схема пустая — текст диаграммы всё равно читается в исходнике.</p>
+</div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad:true, theme:'dark', securityLevel:'loose', flowchart:{ curve:'basis', useMaxWidth:true } });
+</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+# OS / editor
+.DS_Store
+
+# secrets
+.env
+*.env
+
+# python artifacts (inside research/)
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+
+# ML run artifacts / generated data (never commit real calls)
+research/data/raw/
+research/data/real/
+research/models/
+research/mlruns/

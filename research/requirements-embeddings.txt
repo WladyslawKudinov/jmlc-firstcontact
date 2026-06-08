@@ -1,0 +1,5 @@
+# Optional: multilingual sentence embeddings for the text features.
+# Pulls in torch — heavy. Install ONLY if running the embedding-based pipeline:
+#   pip install -r requirements-embeddings.txt
+# The TF-IDF baseline path needs nothing beyond requirements.txt.
+sentence-transformers>=2.7

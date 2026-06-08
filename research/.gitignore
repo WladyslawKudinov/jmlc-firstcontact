@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# Secrets
+.env
+
+# Prod IP — keep the live Sofia system prompt out of git history
+# (research repo is standalone; the prompt belongs to the separate prod repo)
+assets/sofia_od_v2_system_prompt.txt
+
+# Experiment tracking & trained models
+mlruns/
+models/
+
+# Rendered report (regenerate via `make report`)
+docs/report/*.html
+
+# Generated / collected data (only a small curated sample is tracked, under data/sample/)
+data/raw/
+data/processed/
+data/real/
+
+# OS
+.DS_Store

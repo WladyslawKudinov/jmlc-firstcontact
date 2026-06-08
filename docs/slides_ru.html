@@ -48,6 +48,34 @@
   .title .meta{margin-top:2em;color:var(--muted);font-size:clamp(14px,1.8vw,20px)}
   .title .rule{width:88px;height:6px;background:var(--accent);border-radius:3px;margin:0 0 1.4em}
 
+  /* ── title slide: dark hero with atmosphere ── */
+  .slide.title{overflow:hidden;color:#e5e7eb;
+    background:
+      radial-gradient(900px 620px at 16% 10%, rgba(99,102,241,.30), transparent 60%),
+      radial-gradient(820px 620px at 90% 92%, rgba(56,189,248,.20), transparent 60%),
+      linear-gradient(160deg,#0c1124 0%,#090d1a 100%);}
+  .slide.title::before{content:"";position:absolute;inset:0;pointer-events:none;
+    background-image:linear-gradient(rgba(148,163,184,.06) 1px,transparent 1px),
+                     linear-gradient(90deg,rgba(148,163,184,.06) 1px,transparent 1px);
+    background-size:48px 48px;
+    -webkit-mask-image:radial-gradient(ellipse 78% 68% at 50% 46%,#000 38%,transparent 82%);
+    mask-image:radial-gradient(ellipse 78% 68% at 50% 46%,#000 38%,transparent 82%);}
+  .slide.title::after{content:"";position:absolute;left:-10vw;top:-14vw;width:46vw;height:46vw;
+    pointer-events:none;background:radial-gradient(circle,rgba(99,102,241,.32),transparent 62%);filter:blur(38px)}
+  .slide.title>*{position:relative;z-index:1}
+  .slide.title h1{font-size:clamp(34px,6vw,68px);letter-spacing:-.015em;
+    background:linear-gradient(102deg,#ffffff 0%,#c7d2fe 42%,#7dd3fc 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .slide.title .sub{color:#cbd5e1;max-width:26em}
+  .slide.title .meta{color:#94a3b8}
+  .slide.title .rule{width:104px;background:linear-gradient(90deg,#6366f1,#38bdf8);
+    box-shadow:0 0 26px rgba(99,102,241,.75)}
+  .slide.title .rule{animation:riseIn .7s .05s both}
+  .slide.title h1{animation:riseIn .8s .18s both}
+  .slide.title .sub{animation:riseIn .8s .34s both}
+  .slide.title .meta{animation:riseIn .8s .5s both}
+  @keyframes riseIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
   /* stat cards */
   .stats{display:flex;gap:clamp(14px,3vw,40px);flex-wrap:wrap;margin:.4em 0 .2em}
   .stat{flex:1 1 120px}
@@ -64,6 +92,27 @@
   .slide.dark .clincher{color:#cbd5e1}
   .slide.dark .stat.good .val{color:#34d399}
   .slide.dark .stat.bad .val{color:#f87171}
+
+  /* ascending "ladder" infographic (real-call AUCs) */
+  .ladder{position:relative;display:flex;align-items:flex-end;justify-content:center;
+    gap:clamp(16px,5vw,60px);height:clamp(130px,22vh,190px);margin:2.7em 0 .3em}
+  .ladder .col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;z-index:2}
+  .ladder .bar{position:relative;width:clamp(54px,11vw,118px);border-radius:9px 9px 0 0;
+    animation:grow .8s cubic-bezier(.2,.8,.2,1) both}
+  .ladder .bar.red{background:linear-gradient(180deg,#fb7185,#9f1239);box-shadow:0 0 30px rgba(244,63,94,.35)}
+  .ladder .bar.grn{background:linear-gradient(180deg,#5eead4,#0f766e);box-shadow:0 0 30px rgba(45,212,191,.30)}
+  .ladder .bar .v{position:absolute;top:-1.35em;left:50%;transform:translateX(-50%);
+    font-size:clamp(22px,3.6vw,44px);font-weight:800;letter-spacing:-.02em}
+  .ladder .bar.red .v{color:#fb7185} .ladder .bar.grn .v{color:#5eead4}
+  .ladder .nm{margin-top:.55em;height:2.5em;display:flex;align-items:flex-start;justify-content:center;
+    font-size:clamp(11px,1.6vw,17px);color:#cbd5e1;text-align:center;max-width:14ch;line-height:1.2;font-weight:600}
+  .ladder .ref{position:absolute;left:0;right:0;border-top:1.5px dashed #475569;z-index:1}
+  .ladder .ref .rl{position:absolute;right:0;top:-1.5em;font-size:clamp(10px,1.3vw,14px);color:#64748b}
+  @keyframes grow{from{height:0!important}}
+  .ladder .col:nth-child(2) .bar{animation-delay:.10s}
+  .ladder .col:nth-child(3) .bar{animation-delay:.24s}
+  .ladder .col:nth-child(4) .bar{animation-delay:.38s}
+  .ladder .col:nth-child(5) .bar{animation-delay:.52s}
 
   /* table (backup) */
   table{border-collapse:collapse;margin:.3em 0;font-size:clamp(14px,2vw,22px);width:100%}
@@ -234,11 +283,11 @@
   <!-- 5 — Проверка реальностью (кульминация) -->
   <section class="slide dark">
     <h2>Решающий тест: 3 подхода на 31 реальном звонке</h2>
-    <div class="stats" style="gap:clamp(10px,2vw,30px)">
-      <div class="stat bad"><div class="val" style="font-size:clamp(30px,5.2vw,62px)">0.39</div><div class="lbl">модель (текст)</div></div>
-      <div class="stat good"><div class="val" style="font-size:clamp(30px,5.2vw,62px)">0.66</div><div class="lbl">правила</div></div>
-      <div class="stat good"><div class="val" style="font-size:clamp(30px,5.2vw,62px)">0.76</div><div class="lbl">+ LLM-извлечение</div></div>
-      <div class="stat good"><div class="val" style="font-size:clamp(30px,5.2vw,62px)">0.80</div><div class="lbl">LLM-скорер</div></div>
+    <div class="ladder">
+      <div class="col"><div class="bar red" style="height:16%"><span class="v">0.39</span></div><div class="nm">модель (текст)</div></div>
+      <div class="col"><div class="bar grn" style="height:65%"><span class="v">0.66</span></div><div class="nm">правила</div></div>
+      <div class="col"><div class="bar grn" style="height:84%"><span class="v">0.76</span></div><div class="nm">+ LLM-извлечение</div></div>
+      <div class="col"><div class="bar grn" style="height:91%"><span class="v">0.80</span></div><div class="nm">LLM-скорер</div></div>
     </div>
     <div class="clincher">Наша модель цеплялась за то, <b style="color:#f87171">КАК</b> человек говорит, — за манеру речи → на реальных звонках разваливается (0.67→0.39). Правила и LLM смотрят на то, <b style="color:#34d399">ЧТО</b> человек сказал, — на факты → и на реальных звонках работают. А LLM обходит правила не хитрой формулой, а тем, что <b style="color:#34d399">точнее достаёт факты</b> из живой речи.</div>
     <div style="margin-top:.7em;font-size:clamp(16px,2.4vw,25px);font-weight:700;color:#fbbf24">Тест на реальных звонках подтвердил: <b>решение не катить было верным</b>.</div>

@@ -11,13 +11,16 @@
 
 ---
 
-## 📄 Документы (открыть как страницу / скриншот)
+## 📄 Документы
 
-| Документ | Что это |
+GitHub показывает HTML как исходник — чтобы открыть **как страницу**, жми «render»
+(или скачай файл и открой в браузере).
+
+| Документ | Открыть |
 |---|---|
-| [`docs/project_summary_ru.html`](docs/project_summary_ru.html) | **Краткое описание проекта** (3 страницы) — продукт, эксперимент, закрытие критериев |
-| [`docs/slides_ru.html`](docs/slides_ru.html) | **Слайды** для устной защиты |
-| [`docs/product/architecture-map.html`](docs/product/architecture-map.html) | Карта архитектуры продукта |
+| **Краткое описание проекта** (3 страницы) — продукт, эксперимент, закрытие критериев | [render](https://htmlpreview.github.io/?https://github.com/WladyslawKudinov/jmlc-firstcontact/blob/main/docs/project_summary_ru.html) · [исходник](docs/project_summary_ru.html) |
+| **Слайды** для устной защиты | [render](https://htmlpreview.github.io/?https://github.com/WladyslawKudinov/jmlc-firstcontact/blob/main/docs/slides_ru.html) · [исходник](docs/slides_ru.html) |
+| Карта архитектуры продукта | [render](https://htmlpreview.github.io/?https://github.com/WladyslawKudinov/jmlc-firstcontact/blob/main/docs/product/architecture-map.html) · [исходник](docs/product/architecture-map.html) |
 
 ---
 
